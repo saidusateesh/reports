@@ -7,9 +7,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2     # checkout the repo
-      - run: npm ci                   # install packages
-      - run: npm test                 # run tests (configured to use jest-junit reporter)
-
+      - name: Install dependencies
+        run: |
+         sudo apt-get update
+         sudo apt-get install libunwind-dev libboost-all-dev build-essential qtcreator qtbase5-dev qt5-qmake qtpositioning5-dev qtmultimedia5-dev cmake libbluetooth-dev libmtp-dev libudev-dev libinput-dev libsystemd-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 libpulse-dev gstreamer1.0-pulseaudio libtag1-dev
+         sudo apt-get -y install libgtest-dev && cd /usr/src/gtest && cmake CMakeLists.txt &&  make && cd lib && cp *.a /usr/lib
+         sudo apt-get -y install libgmock-dev && cd /usr/src/googletest/googlemock/ &&  cmake CMakeLists.txt &&  make && cd lib && cp *.a /usr/lib
+         sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+         
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: success() || failure()    # run this step even if previous step failed
