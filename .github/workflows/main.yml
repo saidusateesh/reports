@@ -35,3 +35,15 @@ jobs:
          sudo apt-get -y install libgmock-dev && cd /usr/src/googletest/googlemock/ &&  cmake CMakeLists.txt &&  make && cd lib && cp *.a /usr/lib
          sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
          
+         
+      - name: Publish test report
+        uses: actions/upload-artifact@v2
+        with:
+           name: test-report
+           path: 'unit-tests/build/report.xml'
+      -  name: Publish Test Results
+         uses: actions/publish-test-results@v1
+         if: always()
+         with:
+           name: Test-results
+           path: 'unit-tests/build/report.xml'
