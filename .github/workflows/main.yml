@@ -35,6 +35,23 @@ jobs:
          sudo apt-get -y install libgmock-dev && cd /usr/src/googletest/googlemock/ &&  cmake CMakeLists.txt &&  make && cd lib && cp *.a /usr/lib
          sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
          
+          - name: Install libdbuswrapper
+            run: |
+          cd neww
+          mkdir build
+          cd build
+          cmake -DCMAKE_PREFIX_PATH=`qmake -query QT_HOST_PREFIX` -DCMAKE_INSTALL_PREFIX=`qmake -query QT_HOST_PREFIX` ..
+          sudo make install
+          
+      - name: Test
+        run: |
+         cd unit-tests
+         cd build
+         cmake -DCMAKE_PREFIX_PATH=`qmake -query QT_HOST_PREFIX` -DCMAKE_INSTALL_PREFIX=`qmake -query QT_HOST_PREFIX` ..
+         sudo make install
+         ./dbuswrapperTest-1.0.0 --gtest_output=xml:report.xml || true
+         ls -latr
+         
          
       - name: Publish test report
         uses: actions/upload-artifact@v2
