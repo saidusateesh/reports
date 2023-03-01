@@ -1,66 +1,19 @@
-name: CMake
-
-# this is for testing
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
-
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
-  SOLUTION: 'unit-tests/build/report.xml'
-  
+  push:
 jobs:
-  build:
-    # The CMake configure and build commands are platform-agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-22.04
-
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2     # checkout the repo
+      - run: npm ci                   # install packages
+      - run: npm test                 # run tests (configured to use jest-junit reporter)
 
-      
-           
-      
-
-      - name: Install dependencies
-        run: |
-         sudo apt-get update
-         sudo apt-get install libunwind-dev libboost-all-dev build-essential qtcreator qtbase5-dev qt5-qmake qtpositioning5-dev qtmultimedia5-dev cmake libbluetooth-dev libmtp-dev libudev-dev libinput-dev libsystemd-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 libpulse-dev gstreamer1.0-pulseaudio libtag1-dev
-         sudo apt-get -y install libgtest-dev && cd /usr/src/gtest && cmake CMakeLists.txt &&  make && cd lib && cp *.a /usr/lib
-         sudo apt-get -y install libgmock-dev && cd /usr/src/googletest/googlemock/ &&  cmake CMakeLists.txt &&  make && cd lib && cp *.a /usr/lib
-         sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
-         
-          - name: Install libdbuswrapper
-            run: |
-          cd neww
-          mkdir build
-          cd build
-          cmake -DCMAKE_PREFIX_PATH=`qmake -query QT_HOST_PREFIX` -DCMAKE_INSTALL_PREFIX=`qmake -query QT_HOST_PREFIX` ..
-          sudo make install
-          
-      - name: Test
-        run: |
-         cd unit-tests
-         cd build
-         cmake -DCMAKE_PREFIX_PATH=`qmake -query QT_HOST_PREFIX` -DCMAKE_INSTALL_PREFIX=`qmake -query QT_HOST_PREFIX` ..
-         sudo make install
-         ./dbuswrapperTest-1.0.0 --gtest_output=xml:report.xml || true
-         ls -latr
-         
-         
-      - name: Publish test report
-        uses: actions/upload-artifact@v2
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
         with:
-           name: test-report
-           path: 'unit-tests/build/report.xml'
-      -  name: Publish Test Results
-         uses: actions/publish-test-results@v1
-         if: always()
-         with:
-           name: Test-results
-           path: 'unit-tests/build/report.xml'
+          name: JEST Tests            # Name of the check run which will be created
+          path: reports/jest-*.xml    # Path to test results
+          reporter: jest-junit 
